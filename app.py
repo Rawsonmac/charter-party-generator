@@ -231,7 +231,7 @@ with st.expander("Charter Terms", expanded=True):
                 label,
                 value=default_value,
                 key=f"term_{key}",
-                help=f"Enter the {key.lower()} (e.g., company name for Owners, cargo type for Cargo).",
+                help=f"Enter the {key.lower()} (e.g., company name for Owners, cargo type for Cargo)."
             )
             if not custom_terms[key] and key in ["Owners", "Charterers", "Vessel Name"]:
                 errors[key] = f"{key.replace('_', ' ')} is required"
@@ -272,3 +272,146 @@ with st.expander("Ports and Dates", expanded=True):
     custom_terms["Freight Rate"] = st.text_input(
         '<span class="tooltip" data-tooltip="Rate per ton or Worldscale points">Freight Rate</span>',
         placeholder="e.g., WS100 or 50.00",
+        help="Enter the freight rate (Worldscale points or USD per ton).",
+        key="freight_rate"
+    )
+    custom_terms["Use Worldscale"] = st.checkbox(
+        '<span class="tooltip" data-tooltip="Apply Worldscale rates for freight">Use Worldscale Terms</span>',
+        value=True,
+        help="Check to apply Worldscale freight rates; uncheck for custom rates.",
+        key="use_worldscale"
+    )
+
+    # Validation
+    if custom_terms["Loading Port"] == "Select a port":
+        errors["Loading Port"] = "Please select a loading port"
+    if custom_terms["Discharging Port"] == "Select a port":
+        errors["Discharging Port"] = "Please select a discharging port"
+    if custom_terms["Laydays"] and custom_terms["Cancelling"] and custom_terms["Laydays"] >= custom_terms["Cancelling"]:
+        errors["Cancelling"] = "Cancelling date must be after laydays"
+    if custom_terms["Freight Rate"] and not custom_terms["Freight Rate"].replace('.', '', 1).isdigit():
+        errors["Freight Rate"] = "Freight rate must be a number"
+
+    # Display errors next to fields
+    for field, error in errors.items():
+        st.markdown(f'<p class="error">{error}</p>', unsafe_allow_html=True)
+
+# Clause selection
+with st.expander("Additional Clauses", expanded=True):
+    st.markdown('<p class="section-title">Add Optional Clauses</p>', unsafe_allow_html=True)
+    selected_clauses = st.multiselect(
+        "Select Clauses",
+        [clause["title"] for clause in clauses],
+        help="Choose additional clauses to include in the charter.",
+        key="clauses"
+    )
+    for clause in clauses:
+        if clause["title"] in selected_clauses:
+            st.markdown(f"**{clause['title']}**: {clause['description']}")
+            st.text_area(
+                f"{clause['title']} Content",
+                value=clause["content"],
+                disabled=True,
+                key=f"clause_{clause['id']}",
+                help="This clause is included in the document."
+            )
+    selected_clause_content = "\n\n".join(
+        clause["content"] for clause in clauses if clause["title"] in selected_clauses
+    )
+    if selected_clause_content:
+        custom_terms["Additional Clauses"] = selected_clause_content
+
+    additional_clauses = st.text_area(
+        '<span class="tooltip" data-tooltip="Custom clauses for specific needs">Custom Clauses</span>',
+        placeholder="Enter any custom clauses here...",
+        help="Add custom clauses specific to your charter agreement.",
+        key="additional_clauses"
+    )
+    if additional_clauses:
+        custom_terms["Additional Clauses"] = (
+            custom_terms.get("Additional Clauses", "") + "\n\n" + additional_clauses
+        ).strip()
+
+# Worldscale calculator
+with st.expander("Worldscale Calculator", expanded=False):
+    st.markdown('<p class="section-title">Estimate Freight Rate</p>', unsafe_allow_html=True)
+    if st.button("Calculate Worldscale Rate"):
+        distance = st.number_input(
+            "Distance (nautical miles)",
+            min_value=0.0,
+            value=1000.0,
+            help="Enter the voyage distance in nautical miles.",
+            key="distance"
+        )
+        vessel_size = st.number_input(
+            "Vessel Size (DWT)",
+            min_value=0.0,
+            value=50000.0,
+            help="Enter the vessel's deadweight tonnage (DWT).",
+            key="vessel_size"
+        )
+        rate = distance * vessel_size * 0.0001  # Mock calculation
+        st.markdown(f"**Estimated Worldscale Rate**: USD {rate:.2f}")
+
+# Save and generate
+with st.expander("Generate and Save", expanded=True):
+    st.markdown('<p class="section-title">Generate Charter</p>', unsafe_allow_html=True)
+    save_charter = st.checkbox(
+        "Save Charter for Future Reference",
+        help="Check to save this charter to review later.",
+        key="save_charter"
+    )
+    if st.button("Generate Charter Document"):
+        if errors:
+            st.error("Please correct the following errors:")
+            for field, error in errors.items():
+                st.markdown(f"- {error}", unsafe_allow_html=True)
+        else:
+            # Save charter
+            if save_charter:
+                saved_charters = []
+                if os.path.exists(CHARTERS_FILE):
+                    with open(CHARTERS_FILE, "r") as f:
+                        saved_charters = json.load(f)
+                saved_charters.append({
+                    "template": template_name,
+                    "vessel_class": vessel_class,
+                    "terms": {k: str(v) for k, v in custom_terms.items()}
+                })
+                with open(CHARTERS_FILE, "w") as f:
+                    json.dump(saved_charters, f)
+
+            # Generate document
+            doc_text = generate_document(template_name, custom_terms)
+            st.markdown("### Document Preview")
+            st.markdown(doc_text, unsafe_allow_html=True)
+
+            # Generate Word document
+            doc = Document()
+            for paragraph in doc_text.split('\n\n'):
+                doc.add_paragraph(paragraph.replace('\n', ' '))
+            
+            # Save to BytesIO
+            doc_buffer = BytesIO()
+            doc.save(doc_buffer)
+            doc_buffer.seek(0)
+            
+            # Provide download link
+            b64 = base64.b64encode(doc_buffer.getvalue()).decode()
+            href = f'<a href="data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{b64}" download="{template_name}_Charter_{vessel_class}.docx">Download Charter Document (Word)</a>'
+            st.markdown(href, unsafe_allow_html=True)
+            st.success("Document generated successfully!")
+
+# Saved charters
+with st.expander("Saved Charters", expanded=False):
+    st.markdown('<p class="section-title">View Saved Charters</p>', unsafe_allow_html=True)
+    if os.path.exists(CHARTERS_FILE):
+        with open(CHARTERS_FILE, "r") as f:
+            saved_charters = json.load(f)
+        if saved_charters:
+            for i, charter in enumerate(saved_charters):
+                st.markdown(f"**Charter {i+1}**: {charter['template']} - {charter['vessel_class']} - {charter['terms'].get('Vessel Name', 'Unnamed')}")
+        else:
+            st.write("No saved charters yet.")
+    else:
+        st.write("No saved charters yet.")
