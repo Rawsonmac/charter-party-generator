@@ -11,7 +11,7 @@ from io import BytesIO
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CHARTERS_FILE = os.path.join(BASE_DIR, "charters.json")
 
-# Custom CSS for oil/gas theme
+# Custom CSS for improved oil/gas-themed UI
 st.markdown("""
     <style>
         body {
@@ -20,20 +20,31 @@ st.markdown("""
             background-attachment: fixed;
         }
         .stApp {
-            background-color: rgba(255, 255, 255, 0.95);
-            border-radius: 0.5rem;
+            background-color: rgba(255, 255, 255, 0.97);
+            border-radius: 0.75rem;
             padding: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            animation: fadeIn 1s ease-in;
+            max-width: 800px;
+            margin: 0 auto;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            animation: fadeIn 0.8s ease-in;
         }
         .dark-theme .stApp {
-            background-color: rgba(17, 24, 39, 0.95);
+            background-color: rgba(17, 24, 39, 0.97);
             color: #e5e7eb;
         }
         .dark-theme .stTextInput > div > input, .dark-theme .stTextArea > div > textarea, .dark-theme .stSelectbox > div > select {
             background-color: #1f2937;
             color: #e5e7eb;
-            border-color: #374151;
+            border: 1px solid #374151;
+            border-radius: 0.25rem;
+        }
+        .stExpander {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        .dark-theme .stExpander {
+            background-color: rgba(31, 41, 55, 0.3);
         }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(-10px); }
@@ -42,14 +53,39 @@ st.markdown("""
         .header-logo {
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
         }
         .header-logo img {
-            width: 2rem;
-            height: 2rem;
+            width: 2.5rem;
+            height: 2.5rem;
+        }
+        .header-title {
+            color: #1e3a8a;
+            font-size: 2rem;
+            font-weight: 600;
+            margin: 0;
+        }
+        .dark-theme .header-title {
+            color: #60a5fa;
+        }
+        .subheader {
+            color: #4b5563;
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+        .dark-theme .subheader {
+            color: #9ca3af;
         }
         .tooltip {
             position: relative;
+            cursor: help;
+            color: #2563eb;
+            text-decoration: underline dotted;
+        }
+        .dark-theme .tooltip {
+            color: #93c5fd;
         }
         .tooltip:hover::after {
             content: attr(data-tooltip);
@@ -59,14 +95,43 @@ st.markdown("""
             transform: translateX(-50%);
             background-color: #1f2937;
             color: white;
-            padding: 0.5rem;
+            padding: 0.5rem 0.75rem;
             border-radius: 0.25rem;
-            white-space: nowrap;
+            font-size: 0.875rem;
+            white-space: normal;
+            width: 200px;
             z-index: 10;
         }
         .error {
             color: #dc2626;
-            font-size: 0.875rem;
+            font-size: 0.9rem;
+            margin-top: 0.25rem;
+            font-weight: 500;
+        }
+        .section-title {
+            color: #1e40af;
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .dark-theme .section-title {
+            color: #93c5fd;
+        }
+        .stButton > button {
+            background-color: #1e40af;
+            color: white;
+            border-radius: 0.25rem;
+            padding: 0.5rem 1rem;
+            font-weight: 500;
+        }
+        .stButton > button:hover {
+            background-color: #2563eb;
+        }
+        .dark-theme .stButton > button {
+            background-color: #2563eb;
+        }
+        .dark-theme .stButton > button:hover {
+            background-color: #3b82f6;
         }
     </style>
 """, unsafe_allow_html=True)
@@ -75,14 +140,14 @@ st.markdown("""
 st.markdown("""
     <div class="header-logo">
         <img src="https://img.icons8.com/ios-filled/50/000000/oil-tanker.png" alt="Tanker Icon">
-        <h1 style="color: #1e3a8a;">Oil Brokerage Charter Party Generator</h1>
+        <h1 class="header-title">Oil Brokerage Charter Party Generator</h1>
     </div>
-    <p style="text-align: center; color: #4b5563;">Generate a customized TANKERVOY 87 charter party with an oil and gas theme.</p>
+    <p class="subheader">Create a customized TANKERVOY 87 charter party with clear, user-friendly inputs.</p>
 """, unsafe_allow_html=True)
 
 # Theme toggle
 theme = st.session_state.get('theme', 'light')
-if st.button("Toggle Dark/Light Theme"):
+if st.button("Switch to Dark/Light Theme"):
     theme = 'dark' if theme == 'light' else 'light'
     st.session_state.theme = theme
 st.markdown(f'<div class="{theme}-theme">', unsafe_allow_html=True)
@@ -99,163 +164,111 @@ ports = [
     "Port Said, Egypt (Suez Canal access)"
 ]
 
-# Clause library
+# Clause library with descriptions
 clauses = [
-    {"id": "demurrage", "title": "Demurrage", "content": "Demurrage shall be payable at the rate of USD [amount] per day or pro-rata for any part of a day."},
-    {"id": "forceMajeure", "title": "Force Majeure", "content": "Neither party shall be liable for delays due to events beyond their reasonable control, including acts of God, war, or strikes."},
-    {"id": "cargoInspection", "title": "Cargo Inspection", "content": "Charterers shall have the right to appoint an independent inspector to verify cargo quantity and quality at loading and discharging ports."}
+    {
+        "id": "demurrage",
+        "title": "Demurrage",
+        "content": "Demurrage shall be payable at the rate of USD [amount] per day or pro-rata for any part of a day.",
+        "description": "Covers compensation for delays beyond agreed laytime at port."
+    },
+    {
+        "id": "forceMajeure",
+        "title": "Force Majeure",
+        "content": "Neither party shall be liable for delays due to events beyond their reasonable control, including acts of God, war, or strikes.",
+        "description": "Protects against liability for unavoidable delays (e.g., natural disasters, strikes)."
+    },
+    {
+        "id": "cargoInspection",
+        "title": "Cargo Inspection",
+        "content": "Charterers shall have the right to appoint an independent inspector to verify cargo quantity and quality at loading and discharging ports.",
+        "description": "Allows charterers to ensure cargo meets specifications via third-party inspection."
+    }
 ]
 
-# Route input for template suggestion
-st.subheader("Route Information")
-route = st.text_input("Enter Route (e.g., Houston to Rotterdam)", placeholder="Enter route for template suggestions", key="route")
-suggested_templates = suggest_templates_by_route(route) if route else []
-if suggested_templates:
-    st.write("Suggested Templates for Route:")
-    st.write(suggested_templates)
+# Route selection
+with st.expander("Route Information", expanded=True):
+    st.markdown('<p class="section-title">Select Route</p>', unsafe_allow_html=True)
+    route = st.text_input(
+        "Enter Route",
+        placeholder="e.g., Houston to Rotterdam",
+        help="Enter a route to get template suggestions tailored to common oil trade paths.",
+        key="route"
+    )
+    if route:
+        suggested_templates = suggest_templates_by_route(route)
+        st.markdown("**Suggested Templates:**")
+        st.write(", ".join(suggested_templates) or "None")
 
-# Vessel class selection
-st.subheader("Vessel Class")
-vessel_class = st.selectbox("Select Vessel Class", ["Panamax", "Aframax", "Suezmax", "VLCC", "ULCC"], key="vessel_class")
+# Vessel and template selection
+with st.expander("Vessel and Template", expanded=True):
+    st.markdown('<p class="section-title">Vessel Details</p>', unsafe_allow_html=True)
+    vessel_class = st.selectbox(
+        "Vessel Class",
+        ["Panamax", "Aframax", "Suezmax", "VLCC", "ULCC"],
+        help="Select the vessel class to adjust cargo capacity and rates (e.g., Panamax for 60,000 tons).",
+        key="vessel_class"
+    )
+    template_names = get_template_names()
+    template_name = st.selectbox(
+        "Charter Template",
+        template_names,
+        help="Choose a template (e.g., TANKERVOY 87 for voyage charters, Shell Time 4 for time charters).",
+        key="template_name"
+    )
+    template = load_template(template_name)
+    template = adjust_terms_by_vessel_class(template, vessel_class)
 
-# Template selection
-template_names = get_template_names()
-template_name = st.selectbox("Select Charter Template", template_names, key="template_name")
-template = load_template(template_name)
-template = adjust_terms_by_vessel_class(template, vessel_class)
+# Custom terms
+with st.expander("Charter Terms", expanded=True):
+    st.markdown('<p class="section-title">Customize Charter Terms</p>', unsafe_allow_html=True)
+    custom_terms = {}
+    errors = {}
+    for key, default_value in template.items():
+        if key not in ["Standard Clauses", "Modern Clauses", "Additional Clauses"]:
+            label = f'<span class="tooltip" data-tooltip="{key.replace("_", " ").title()} for the charter agreement">{key.replace("_", " ").title()}</span>'
+            custom_terms[key] = st.text_input(
+                label,
+                value=default_value,
+                key=f"term_{key}",
+                help=f"Enter the {key.lower()} (e.g., company name for Owners, cargo type for Cargo).",
+            )
+            if not custom_terms[key] and key in ["Owners", "Charterers", "Vessel Name"]:
+                errors[key] = f"{key.replace('_', ' ')} is required"
+        else:
+            label = f'<span class="tooltip" data-tooltip="{key} for the charter">{key}</span>'
+            custom_terms[key] = st.text_area(
+                label,
+                value=default_value,
+                key=f"term_{key}",
+                help=f"Edit {key.lower()} or leave as default. These are pre-filled from the template."
+            )
 
-# Input fields for custom terms
-st.subheader("Customize Terms")
-custom_terms = {}
-errors = {}
-for key, default_value in template.items():
-    if key not in ["Standard Clauses", "Modern Clauses", "Additional Clauses"]:
-        label = f'<span class="tooltip" data-tooltip="{key} details">{key}</span>'
-        custom_terms[key] = st.text_input(label, value=default_value, key=f"term_{key}", help=f"Enter {key.lower()} details")
-        if not custom_terms[key] and key in ["Owners", "Charterers", "Vessel Name"]:
-            errors[key] = f"{key} is required"
-    else:
-        custom_terms[key] = st.text_area(key, value=default_value, key=f"term_{key}", help=f"Enter {key.lower()} details")
-
-# Additional fields for ports and dates
-custom_terms["Loading Port"] = st.selectbox(
-    '<span class="tooltip" data-tooltip="Port(s) for loading cargo">Loading Port(s)</span>',
-    [""] + ports, key="loading_port", help="Select or type a loading port"
-)
-custom_terms["Discharging Port"] = st.selectbox(
-    '<span class="tooltip" data-tooltip="Port(s) for discharging cargo">Discharging Port(s)</span>',
-    [""] + ports, key="discharging_port", help="Select or type a discharging port"
-)
-custom_terms["Laydays"] = st.date_input(
-    '<span class="tooltip" data-tooltip="Date when laydays commence">Laydays Commencement</span>',
-    key="laydays", help="Select laydays commencement date"
-)
-custom_terms["Cancelling"] = st.date_input(
-    '<span class="tooltip" data-tooltip="Date after which charter can be cancelled">Cancelling Date</span>',
-    key="cancelling", help="Select cancelling date"
-)
-custom_terms["Freight Rate"] = st.text_input(
-    '<span class="tooltip" data-tooltip="Freight rate per ton">Freight Rate (per ton)</span>',
-    key="freight_rate", help="Enter freight rate per ton"
-)
-custom_terms["Use Worldscale"] = st.checkbox(
-    '<span class="tooltip" data-tooltip="Use Worldscale rates or custom terms">Use Worldscale Terms</span>',
-    value=True, key="use_worldscale", help="Check to use Worldscale terms"
-)
-
-# Validation for additional fields
-if not custom_terms["Loading Port"]:
-    errors["Loading Port"] = "Loading port is required"
-if not custom_terms["Discharging Port"]:
-    errors["Discharging Port"] = "Discharging port is required"
-if custom_terms["Laydays"] and custom_terms["Cancelling"] and custom_terms["Laydays"] >= custom_terms["Cancelling"]:
-    errors["Cancelling"] = "Cancelling date must be after laydays"
-if custom_terms["Freight Rate"] and not custom_terms["Freight Rate"].replace('.', '', 1).isdigit():
-    errors["Freight Rate"] = "Freight rate must be a number"
-
-# Display errors
-for field, error in errors.items():
-    st.markdown(f'<p class="error">{error}</p>', unsafe_allow_html=True)
-
-# Clause selection
-st.subheader("Additional Clauses")
-selected_clauses = st.multiselect(
-    "Select Additional Clauses",
-    [clause["title"] for clause in clauses],
-    help="Select optional clauses to include",
-    key="clauses"
-)
-selected_clause_content = "\n\n".join(
-    clause["content"] for clause in clauses if clause["title"] in selected_clauses
-)
-if selected_clause_content:
-    custom_terms["Additional Clauses"] = selected_clause_content
-
-# Additional custom clauses
-additional_clauses = st.text_area(
-    '<span class="tooltip" data-tooltip="Add custom clauses here">Additional Custom Clauses</span>',
-    placeholder="Enter any additional clauses here...", key="additional_clauses", help="Add custom clauses"
-)
-if additional_clauses:
-    custom_terms["Additional Clauses"] = (
-        custom_terms.get("Additional Clauses", "") + "\n\n" + additional_clauses
-    ).strip()
-
-# Save charter option
-save_charter = st.checkbox("Save Charter for Future Use", key="save_charter")
-
-# Worldscale calculator
-if st.button("Worldscale Calculator"):
-    distance = st.number_input("Enter Distance (nautical miles)", min_value=0.0, value=1000.0, key="distance")
-    vessel_size = st.number_input("Enter Vessel Size (DWT)", min_value=0.0, value=50000.0, key="vessel_size")
-    rate = distance * vessel_size * 0.0001  # Mock calculation
-    st.write(f"Estimated Worldscale Rate: USD {rate:.2f}")
-
-# Generate document
-if st.button("Generate Charter Document"):
-    if errors:
-        st.error("Please fix the errors above before generating the document.")
-    else:
-        # Save charter
-        if save_charter:
-            saved_charters = []
-            if os.path.exists(CHARTERS_FILE):
-                with open(CHARTERS_FILE, "r") as f:
-                    saved_charters = json.load(f)
-            saved_charters.append({
-                "template": template_name,
-                "vessel_class": vessel_class,
-                "terms": {k: str(v) for k, v in custom_terms.items()}  # Convert dates to strings
-            })
-            with open(CHARTERS_FILE, "w") as f:
-                json.dump(saved_charters, f)
-
-        # Generate document
-        doc_text = generate_document(template_name, custom_terms)
-        st.markdown("### Document Preview")
-        st.markdown(doc_text, unsafe_allow_html=True)
-
-        # Generate Word document
-        doc = Document()
-        for paragraph in doc_text.split('\n\n'):
-            doc.add_paragraph(paragraph.replace('\n', ' '))
-        
-        # Save to BytesIO
-        doc_buffer = BytesIO()
-        doc.save(doc_buffer)
-        doc_buffer.seek(0)
-        
-        # Provide download link
-        b64 = base64.b64encode(doc_buffer.getvalue()).decode()
-        href = f'<a href="data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{b64}" download="{template_name}_Charter_{vessel_class}.docx">Download Charter Document (Word)</a>'
-        st.markdown(href, unsafe_allow_html=True)
-        st.success("Document generated successfully!")
-
-# Display saved charters
-if os.path.exists(CHARTERS_FILE):
-    with open(CHARTERS_FILE, "r") as f:
-        saved_charters = json.load(f)
-    if saved_charters:
-        st.subheader("Saved Charters")
-        for i, charter in enumerate(saved_charters):
-            st.write(f"Charter {i+1}: {charter['template']} - {charter['vessel_class']} - {charter['terms'].get('Vessel Name', 'Unnamed')}")
+# Additional fields
+with st.expander("Ports and Dates", expanded=True):
+    st.markdown('<p class="section-title">Specify Ports and Dates</p>', unsafe_allow_html=True)
+    custom_terms["Loading Port"] = st.selectbox(
+        '<span class="tooltip" data-tooltip="Port(s) where cargo is loaded">Loading Port</span>',
+        ["Select a port"] + ports,
+        help="Choose the port where cargo will be loaded (e.g., Houston for oil exports).",
+        key="loading_port"
+    )
+    custom_terms["Discharging Port"] = st.selectbox(
+        '<span class="tooltip" data-tooltip="Port(s) where cargo is unloaded">Discharging Port</span>',
+        ["Select a port"] + ports,
+        help="Choose the port where cargo will be discharged (e.g., Rotterdam for imports).",
+        key="discharging_port"
+    )
+    custom_terms["Laydays"] = st.date_input(
+        '<span class="tooltip" data-tooltip="Start date for cargo operations">Laydays Commencement</span>',
+        help="Select the date when cargo operations can begin.",
+        key="laydays"
+    )
+    custom_terms["Cancelling"] = st.date_input(
+        '<span class="tooltip" data-tooltip="Date after which charter can be cancelled">Cancelling Date</span>',
+        help="Select the date after which the charter can be cancelled if not started.",
+        key="cancelling"
+    )
+    custom_terms["Freight Rate"] = st.text_input(
+        '<span class="tooltip" data-tooltip="Rate per ton or Worldscale points">Freight Rate</span>',
+        placeholder="e.g., WS100 or 50.00",
