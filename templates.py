@@ -1,12 +1,42 @@
 def load_template(template_name):
     templates = {
+        "TANKERVOY 87": {
+            "Owners": "[Owners Name]",
+            "Charterers": "[Charterer Name]",
+            "Vessel Name": "TBN",
+            "Vessel Description": "Description of the vessel including class, tonnage, and specifications",
+            "Loading Port": "[To be specified]",
+            "Discharging Port": "[To be specified]",
+            "Laydays": "[Date]",
+            "Cancelling": "[Date]",
+            "Freight Rate": "[To be specified] Worldscale points",
+            "Use Worldscale": "True",
+            "Standard Clauses": """
+                1. Freight payable upon completion of discharge.
+                2. Laytime not to commence before 0600 on ETA unless agreed.
+                3. Owners to provide safe berth.
+                4. Arbitration in New York, London, Singapore, or Hong Kong (New York default).
+            """,
+            "Modern Clauses": """
+                1. Compliance with IMO 2020 sulfur limits.
+                2. Support for electronic Bills of Lading (e-BL).
+                3. Sanctions compliance with U.S., EU, and UN regulations.
+                4. Force majeure includes pandemics and port disruptions.
+                5. TOVALOP compliance for pollution liability.
+            """,
+            "Additional Clauses": ""
+        },
         "Shell Time 4": {
             "Vessel Name": "TBN",
-            "Charterer": "[Charterer Name]",
+            "Charterers": "[Charterer Name]",
             "Period": "12 months +/- 1 month",
             "Hire Rate": "[To be specified] USD/day",
             "Delivery Port": "[To be specified]",
             "Redelivery Port": "[To be specified]",
+            "Loading Port": "[To be specified]",
+            "Discharging Port": "[To be specified]",
+            "Laydays": "[Date]",
+            "Cancelling": "[Date]",
             "Route": "Any",
             "Standard Clauses": """
                 1. Vessel to comply with ISM and ISPS codes.
@@ -19,18 +49,23 @@ def load_template(template_name):
                 2. Sanctions compliance with U.S., EU, and UN regulations.
                 3. Force majeure includes pandemics and geopolitical disruptions.
                 4. Support for electronic Bills of Lading (e-BL).
-            """
+                5. TOVALOP compliance for pollution liability.
+            """,
+            "Additional Clauses": ""
         },
         "Asbatankvoy 2025": {
             "Vessel Name": "TBN",
-            "Charterer": "[Charterer Name]",
+            "Charterers": "[Charterer Name]",
             "Cargo": "Crude Oil",
             "Cargo Capacity": "[To be specified] tons",
-            "Load Port": "[To be specified]",
-            "Discharge Port": "[To be specified]",
+            "Loading Port": "[To be specified]",
+            "Discharging Port": "[To be specified]",
+            "Laydays": "[Date]",
+            "Cancelling": "[Date]",
             "Laytime": "72 hours",
             "Demurrage": "[To be specified] USD/day",
             "Freight Rate": "[To be specified] Worldscale points",
+            "Use Worldscale": "True",
             "Route": "Any",
             "Standard Clauses": """
                 1. Freight payable upon completion of discharge.
@@ -42,19 +77,24 @@ def load_template(template_name):
                 1. Compliance with ESG and carbon intensity reporting.
                 2. Support for electronic Bills of Lading (e-BL).
                 3. Sanctions compliance with U.S., EU, and UN regulations.
-                4. Force majeure includes port disruptions and pandemics.
-            """
+                4. Force majeure includes pandemics and port disruptions.
+                5. TOVALOP compliance for pollution liability.
+            """,
+            "Additional Clauses": ""
         },
         "Shellvoy 6": {
             "Vessel Name": "TBN",
-            "Charterer": "[Charterer Name]",
+            "Charterers": "[Charterer Name]",
             "Cargo": "Crude Oil or Products",
             "Cargo Capacity": "[To be specified] tons",
-            "Load Port": "[To be specified]",
-            "Discharge Port": "[To be specified]",
+            "Loading Port": "[To be specified]",
+            "Discharging Port": "[To be specified]",
+            "Laydays": "[Date]",
+            "Cancelling": "[Date]",
             "Laytime": "72 hours",
             "Demurrage": "[To be specified] USD/day",
             "Freight Rate": "[To be specified] Worldscale points",
+            "Use Worldscale": "True",
             "Route": "Any",
             "Standard Clauses": """
                 1. NOR invalid if free pratique not granted within 6 hours of tendering.
@@ -67,18 +107,23 @@ def load_template(template_name):
                 2. Sanctions compliance with U.S., EU, and UN regulations.
                 3. Force majeure includes geopolitical disruptions.
                 4. Support for electronic Bills of Lading (e-BL).
-            """
+                5. TOVALOP compliance for pollution liability.
+            """,
+            "Additional Clauses": ""
         },
         "BPVOY4": {
             "Vessel Name": "TBN",
-            "Charterer": "[Charterer Name]",
+            "Charterers": "[Charterer Name]",
             "Cargo": "Crude Oil or Products",
             "Cargo Capacity": "[To be specified] tons",
-            "Load Port": "[To be specified]",
-            "Discharge Port": "[To be specified]",
+            "Loading Port": "[To be specified]",
+            "Discharging Port": "[To be specified]",
+            "Laydays": "[Date]",
+            "Cancelling": "[Date]",
             "Laytime": "72 hours",
             "Demurrage": "[To be specified] USD/day",
             "Freight Rate": "[To be specified] Worldscale points",
+            "Use Worldscale": "True",
             "Route": "Any",
             "Standard Clauses": """
                 1. Balanced terms for owners and charterers.
@@ -91,18 +136,23 @@ def load_template(template_name):
                 2. Support for digital reporting and e-BL.
                 3. Sanctions compliance with U.S., EU, and UN regulations.
                 4. Force majeure includes pandemics and port disruptions.
-            """
+                5. TOVALOP compliance for pollution liability.
+            """,
+            "Additional Clauses": ""
         },
         "ExxonMobil Voy2000": {
             "Vessel Name": "TBN",
-            "Charterer": "[Charterer Name]",
+            "Charterers": "[Charterer Name]",
             "Cargo": "Crude Oil or Products",
             "Cargo Capacity": "[To be specified] tons",
-            "Load Port": "[To be specified]",
-            "Discharge Port": "[To be specified]",
+            "Loading Port": "[To be specified]",
+            "Discharging Port": "[To be specified]",
+            "Laydays": "[Date]",
+            "Cancelling": "[Date]",
             "Laytime": "72 hours",
             "Demurrage": "[To be specified] USD/day",
             "Freight Rate": "[To be specified] Worldscale points",
+            "Use Worldscale": "True",
             "Route": "Any",
             "Standard Clauses": """
                 1. Clear and concise terms for loading and discharge.
@@ -115,18 +165,23 @@ def load_template(template_name):
                 2. Sanctions compliance with U.S., EU, and UN regulations.
                 3. Force majeure includes geopolitical disruptions.
                 4. Support for electronic Bills of Lading (e-BL).
-            """
+                5. TOVALOP compliance for pollution liability.
+            """,
+            "Additional Clauses": ""
         },
         "INTERTANKVOY 76": {
             "Vessel Name": "TBN",
-            "Charterer": "[Charterer Name]",
+            "Charterers": "[Charterer Name]",
             "Cargo": "Crude Oil or Products",
             "Cargo Capacity": "[To be specified] tons",
-            "Load Port": "[To be specified]",
-            "Discharge Port": "[To be specified]",
+            "Loading Port": "[To be specified]",
+            "Discharging Port": "[To be specified]",
+            "Laydays": "[Date]",
+            "Cancelling": "[Date]",
             "Laytime": "72 hours",
             "Demurrage": "[To be specified] USD/day",
             "Freight Rate": "[To be specified] Worldscale points",
+            "Use Worldscale": "True",
             "Route": "Any",
             "Standard Clauses": """
                 1. Freight payable upon completion of loading.
@@ -139,13 +194,16 @@ def load_template(template_name):
                 2. Support for electronic Bills of Lading (e-BL).
                 3. Sanctions compliance with U.S., EU, and UN regulations.
                 4. Force majeure includes pandemics and port disruptions.
-            """
+                5. TOVALOP compliance for pollution liability.
+            """,
+            "Additional Clauses": ""
         }
     }
     return templates.get(template_name, {})
 
 def get_template_names():
     return [
+        "TANKERVOY 87",
         "Shell Time 4",
         "Asbatankvoy 2025",
         "Shellvoy 6",
@@ -156,24 +214,52 @@ def get_template_names():
 
 def suggest_templates_by_route(route):
     common_routes = {
-        "Houston to Rotterdam": ["Asbatankvoy 2025", "Shellvoy 6", "BPVOY4", "ExxonMobil Voy2000", "INTERTANKVOY 76"],
-        "Persian Gulf to Singapore": ["Asbatankvoy 2025", "Shellvoy 6", "ExxonMobil Voy2000", "INTERTANKVOY 76"],
-        "West Africa to China": ["Asbatankvoy 2025", "Shellvoy 6", "BPVOY4", "INTERTANKVOY 76"],
-        "Any": ["Shell Time 4", "Asbatankvoy 2025", "Shellvoy 6", "BPVOY4", "ExxonMobil Voy2000", "INTERTANKVOY 76"]
+        "houston to rotterdam": ["TANKERVOY 87", "Asbatankvoy 2025", "Shellvoy 6", "BPVOY4", "ExxonMobil Voy2000", "INTERTANKVOY 76"],
+        "persian gulf to singapore": ["TANKERVOY 87", "Asbatankvoy 2025", "Shellvoy 6", "ExxonMobil Voy2000", "INTERTANKVOY 76"],
+        "west africa to china": ["TANKERVOY 87", "Asbatankvoy 2025", "Shellvoy 6", "BPVOY4", "INTERTANKVOY 76"],
+        "rotterdam to new york": ["TANKERVOY 87", "Asbatankvoy 2025", "Shellvoy 6", "BPVOY4", "ExxonMobil Voy2000"],
+        "fujairah to shanghai": ["TANKERVOY 87", "Asbatankvoy 2025", "Shellvoy 6", "INTERTANKVOY 76"],
+        "ras tanura to antwerp": ["TANKERVOY 87", "Asbatankvoy 2025", "Shellvoy 6", "BPVOY4"],
+        "any": ["TANKERVOY 87", "Shell Time 4", "Asbatankvoy 2025", "Shellvoy 6", "BPVOY4", "ExxonMobil Voy2000", "INTERTANKVOY 76"]
     }
-    route = route.lower() if route else "Any"
+    route = route.lower() if route else "any"
     for key in common_routes:
         if key.lower() in route or route in key.lower():
             return common_routes[key]
-    return ["Any"]
+    return common_routes["any"]
 
 def adjust_terms_by_vessel_class(template, vessel_class):
     vessel_classes = {
-        "Panamax": {"Cargo Capacity": "60,000 tons", "Freight Rate": "WS100–WS150", "Demurrage": "$20,000/day"},
-        "Aframax": {"Cargo Capacity": "80,000–100,000 tons", "Freight Rate": "WS90–WS140", "Demurrage": "$25,000/day"},
-        "Suezmax": {"Cargo Capacity": "120,000–150,000 tons", "Freight Rate": "WS80–WS130", "Demurrage": "$30,000/day"},
-        "VLCC": {"Cargo Capacity": "200,000–250,000 tons", "Freight Rate": "WS50–WS100", "Demurrage": "$40,000/day"},
-        "ULCC": {"Cargo Capacity": "300,000+ tons", "Freight Rate": "WS40–WS90", "Demurrage": "$50,000/day"}
+        "Panamax": {
+            "Cargo Capacity": "60,000 tons",
+            "Freight Rate": "WS100–WS150",
+            "Demurrage": "$20,000/day",
+            "Recommended Ports": "Rotterdam, Houston, Singapore"
+        },
+        "Aframax": {
+            "Cargo Capacity": "80,000–100,000 tons",
+            "Freight Rate": "WS90–WS140",
+            "Demurrage": "$25,000/day",
+            "Recommended Ports": "Houston, Fujairah, Antwerp"
+        },
+        "Suezmax": {
+            "Cargo Capacity": "120,000–150,000 tons",
+            "Freight Rate": "WS80–WS130",
+            "Demurrage": "$30,000/day",
+            "Recommended Ports": "Ras Tanura, Port Said, Shanghai"
+        },
+        "VLCC": {
+            "Cargo Capacity": "200,000–250,000 tons",
+            "Freight Rate": "WS50–WS100",
+            "Demurrage": "$40,000/day",
+            "Recommended Ports": "Ras Tanura, Singapore, Shanghai"
+        },
+        "ULCC": {
+            "Cargo Capacity": "300,000+ tons",
+            "Freight Rate": "WS40–WS90",
+            "Demurrage": "$50,000/day",
+            "Recommended Ports": "Ras Tanura, Fujairah, Singapore"
+        }
     }
     adjusted_template = template.copy()
     if vessel_class in vessel_classes:
@@ -184,4 +270,8 @@ def adjust_terms_by_vessel_class(template, vessel_class):
             adjusted_template["Freight Rate"] = class_data["Freight Rate"]
         if "Demurrage" in adjusted_template:
             adjusted_template["Demurrage"] = class_data["Demurrage"]
+        if "Loading Port" in adjusted_template and adjusted_template["Loading Port"] == "[To be specified]":
+            adjusted_template["Loading Port"] = class_data["Recommended Ports"]
+        if "Discharging Port" in adjusted_template and adjusted_template["Discharging Port"] == "[To be specified]":
+            adjusted_template["Discharging Port"] = class_data["Recommended Ports"]
     return adjusted_template
