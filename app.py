@@ -1,14 +1,23 @@
 import streamlit as st
-from templates import load_template
+from templates import load_template, get_template_names, suggest_templates_by_route
 from document_generator import generate_document
 import base64
 
 # Streamlit app
 st.title("Oil Brokerage Charter Party Generator")
 
+# Route input for template suggestion
+st.subheader("Route Information")
+route = st.text_input("Enter Route (e.g., Houston to Rotterdam)", placeholder="Enter route for template suggestions")
+suggested_templates = suggest_templates_by_route(route) if route else []
+
+if suggested_templates:
+    st.write("Suggested Templates for Route:")
+    st.write(suggested_templates)
+
 # Template selection
-template_options = ["Shell Time 4", "Asbatankvoy 2025", "Shellvoy 6", "BPVOY4", "ExxonMobil Voy2000"]
-template_name = st.selectbox("Select Charter Template", template_options)
+template_names = get_template_names()
+template_name = st.selectbox("Select Charter Template", template_names)
 
 # Load template
 template = load_template(template_name)
@@ -17,7 +26,7 @@ template = load_template(template_name)
 st.subheader("Customize Terms")
 custom_terms = {}
 for key, default_value in template.items():
-    if key != "Standard Clauses":
+    if key not in ["Standard Clauses", "Modern Clauses"]:
         custom_terms[key] = st.text_input(key, value=default_value)
     else:
         custom_terms[key] = st.text_area(key, value=default_value)
