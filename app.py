@@ -4,10 +4,12 @@ from document_generator import generate_document
 import base64
 import json
 import os
-from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
-from reportlab.lib.styles import getSampleStyleSheet
+from docx import Document
 from io import BytesIO
+
+# Ensure absolute path for charters.json on Streamlit Cloud
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+CHARTERS_FILE = os.path.join(BASE_DIR, "charters.json")
 
 # Custom CSS for oil/gas theme
 st.markdown("""
@@ -127,7 +129,7 @@ st.subheader("Customize Terms")
 custom_terms = {}
 errors = {}
 for key, default_value in template.items():
-    if key not in ["Standard Clauses", "Modern Clauses"]:
+    if key not in ["Standard Clauses", "Modern Clauses", "Additional Clauses"]:
         label = f'<span class="tooltip" data-tooltip="{key} details">{key}</span>'
         custom_terms[key] = st.text_input(label, value=default_value, key=f"term_{key}", help=f"Enter {key.lower()} details")
         if not custom_terms[key] and key in ["Owners", "Charterers", "Vessel Name"]:
@@ -217,15 +219,15 @@ if st.button("Generate Charter Document"):
         # Save charter
         if save_charter:
             saved_charters = []
-            if os.path.exists("charters.json"):
-                with open("charters.json", "r") as f:
+            if os.path.exists(CHARTERS_FILE):
+                with open(CHARTERS_FILE, "r") as f:
                     saved_charters = json.load(f)
             saved_charters.append({
                 "template": template_name,
                 "vessel_class": vessel_class,
-                "terms": custom_terms
+                "terms": {k: str(v) for k, v in custom_terms.items()}  # Convert dates to strings
             })
-            with open("charters.json", "w") as f:
+            with open(CHARTERS_FILE, "w") as f:
                 json.dump(saved_charters, f)
 
         # Generate document
@@ -233,22 +235,25 @@ if st.button("Generate Charter Document"):
         st.markdown("### Document Preview")
         st.markdown(doc_text, unsafe_allow_html=True)
 
-        # Generate PDF
-        pdf_buffer = BytesIO()
-        doc = SimpleDocTemplate(pdf_buffer, pagesize=letter)
-        styles = getSampleStyleSheet()
-        story = [Paragraph(line.replace('\n', '<br/>'), styles['Normal']) for line in doc_text.split('\n\n')]
-        doc.build(story)
+        # Generate Word document
+        doc = Document()
+        for paragraph in doc_text.split('\n\n'):
+            doc.add_paragraph(paragraph.replace('\n', ' '))
+        
+        # Save to BytesIO
+        doc_buffer = BytesIO()
+        doc.save(doc_buffer)
+        doc_buffer.seek(0)
         
         # Provide download link
-        b64 = base64.b64encode(pdf_buffer.getvalue()).decode()
-        href = f'<a href="data:application/pdf;base64,{b64}" download="{template_name}_Charter_{vessel_class}.pdf">Download Charter Document (PDF)</a>'
+        b64 = base64.b64encode(doc_buffer.getvalue()).decode()
+        href = f'<a href="data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{b64}" download="{template_name}_Charter_{vessel_class}.docx">Download Charter Document (Word)</a>'
         st.markdown(href, unsafe_allow_html=True)
         st.success("Document generated successfully!")
 
 # Display saved charters
-if os.path.exists("charters.json"):
-    with open("charters.json", "r") as f:
+if os.path.exists(CHARTERS_FILE):
+    with open(CHARTERS_FILE, "r") as f:
         saved_charters = json.load(f)
     if saved_charters:
         st.subheader("Saved Charters")
