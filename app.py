@@ -1,5 +1,5 @@
 import streamlit as st
-from templates import load_template, get_template_names, suggest_templates_by_route
+from templates import load_template, get_template_names, suggest_templates_by_route, adjust_terms_by_vessel_class
 from document_generator import generate_document
 import base64
 
@@ -15,12 +15,17 @@ if suggested_templates:
     st.write("Suggested Templates for Route:")
     st.write(suggested_templates)
 
+# Vessel class selection
+st.subheader("Vessel Class")
+vessel_class = st.selectbox("Select Vessel Class", ["Panamax", "Aframax", "Suezmax", "VLCC", "ULCC"])
+
 # Template selection
 template_names = get_template_names()
 template_name = st.selectbox("Select Charter Template", template_names)
 
-# Load template
+# Load template and adjust terms based on vessel class
 template = load_template(template_name)
+template = adjust_terms_by_vessel_class(template, vessel_class)
 
 # Input fields for custom terms
 st.subheader("Customize Terms")
@@ -44,6 +49,6 @@ if st.button("Generate Charter Document"):
     
     # Provide download link
     b64 = base64.b64encode(doc_buffer.getvalue()).decode()
-    href = f'<a href="data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{b64}" download="{template_name}_Charter.docx">Download Charter Document</a>'
+    href = f'<a href="data:application/vnd.openxmlformats-officedocument.wordprocessingml.document;base64,{b64}" download="{template_name}_Charter_{vessel_class}.docx">Download Charter Document</a>'
     st.markdown(href, unsafe_allow_html=True)
     st.success("Document generated successfully!")
