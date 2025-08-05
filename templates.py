@@ -1,5 +1,73 @@
+import psycopg2
+from psycopg2.extras import Json
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
+
+# Database connection
+def get_db_connection():
+    return psycopg2.connect(
+        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        host=os.getenv("DB_HOST"),
+        port=os.getenv("DB_PORT")
+    )
+
+# Initialize database with templates table
+def init_db():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS templates (
+            id SERIAL PRIMARY KEY,
+            template_name VARCHAR(255) UNIQUE,
+            terms JSONB
+        );
+    """)
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+# Load template from database
 def load_template(template_name):
-    templates = {
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT terms FROM templates WHERE template_name = %s", (template_name,))
+    result = cursor.fetchone()
+    cursor.close()
+    conn.close()
+    return result[0] if result else {}
+
+# Save template to database
+def save_template(template_name, terms):
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("""
+        INSERT INTO templates (template_name, terms)
+        VALUES (%s, %s)
+        ON CONFLICT (template_name) DO UPDATE
+        SET terms = EXCLUDED.terms
+    """, (template_name, Json(terms)))
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+# Get all template names
+def get_template_names():
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT template_name FROM templates")
+    names = [row[0] for row in cursor.fetchall()]
+    cursor.close()
+    conn.close()
+    return names
+
+# Initialize default templates if not already in database
+def initialize_default_templates():
+    default_templates = {
         "Shell Time 4": {
             "Vessel Name": "TBN",
             "Charterer": "[Charterer Name]",
@@ -76,4 +144,9 @@ def load_template(template_name):
             """
         }
     }
-    return templates.get(template_name, {})
+    for name, terms in default_templates.items():
+        save_template(name, terms)
+
+# Run initialization
+init_db()
+initialize_default_templates()
