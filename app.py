@@ -78,30 +78,6 @@ st.markdown("""
         .dark-theme .subheader {
             color: #9ca3af;
         }
-        .tooltip {
-            position: relative;
-            cursor: help;
-            color: #2563eb;
-            text-decoration: underline dotted;
-        }
-        .dark-theme .tooltip {
-            color: #93c5fd;
-        }
-        .tooltip:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #1f2937;
-            color: white;
-            padding: 0.5rem 0.75rem;
-            border-radius: 0.25rem;
-            font-size: 0.875rem;
-            white-space: normal;
-            width: 200px;
-            z-index: 10;
-        }
         .error {
             color: #dc2626;
             font-size: 0.9rem;
@@ -221,22 +197,23 @@ with st.expander("Vessel and Template", expanded=True):
 
 # Custom terms
 with st.expander("Charter Terms", expanded=True):
-    st.markdown('<p class="section-title">Customize Charter Terms</p>', unsafe_allow_html=True)
+    st.markdown('<p class="section-title">Enter Charter Details</p>', unsafe_allow_html=True)
+    st.markdown("Provide details for the charter agreement, such as company names and vessel specifications.", unsafe_allow_html=True)
     custom_terms = {}
     errors = {}
     for key, default_value in template.items():
         if key not in ["Standard Clauses", "Modern Clauses", "Additional Clauses"]:
-            label = f'<span class="tooltip" data-tooltip="{key.replace("_", " ").title()} for the charter agreement">{key.replace("_", " ").title()}</span>'
+            label = key.replace("_", " ").title()
             custom_terms[key] = st.text_input(
                 label,
                 value=default_value,
                 key=f"term_{key}",
-                help=f"Enter the {key.lower()} (e.g., company name for Owners, cargo type for Cargo)."
+                help=f"Enter the {key.lower()} (e.g., company name for Owners, cargo type for Cargo). Required for Owners, Charterers, and Vessel Name."
             )
             if not custom_terms[key] and key in ["Owners", "Charterers", "Vessel Name"]:
                 errors[key] = f"{key.replace('_', ' ')} is required"
         else:
-            label = f'<span class="tooltip" data-tooltip="{key} for the charter">{key}</span>'
+            label = key
             custom_terms[key] = st.text_area(
                 label,
                 value=default_value,
@@ -247,36 +224,37 @@ with st.expander("Charter Terms", expanded=True):
 # Additional fields
 with st.expander("Ports and Dates", expanded=True):
     st.markdown('<p class="section-title">Specify Ports and Dates</p>', unsafe_allow_html=True)
+    st.markdown("Select ports for loading and discharging cargo, and set dates for operations.", unsafe_allow_html=True)
     custom_terms["Loading Port"] = st.selectbox(
-        '<span class="tooltip" data-tooltip="Port(s) where cargo is loaded">Loading Port</span>',
+        "Loading Port",
         ["Select a port"] + ports,
-        help="Choose the port where cargo will be loaded (e.g., Houston for oil exports).",
+        help="Choose the port where cargo will be loaded (e.g., Houston for oil exports). Required.",
         key="loading_port"
     )
     custom_terms["Discharging Port"] = st.selectbox(
-        '<span class="tooltip" data-tooltip="Port(s) where cargo is unloaded">Discharging Port</span>',
+        "Discharging Port",
         ["Select a port"] + ports,
-        help="Choose the port where cargo will be discharged (e.g., Rotterdam for imports).",
+        help="Choose the port where cargo will be discharged (e.g., Rotterdam for imports). Required.",
         key="discharging_port"
     )
     custom_terms["Laydays"] = st.date_input(
-        '<span class="tooltip" data-tooltip="Start date for cargo operations">Laydays Commencement</span>',
-        help="Select the date when cargo operations can begin.",
+        "Laydays Commencement",
+        help="Select the date when cargo operations can begin. Required.",
         key="laydays"
     )
     custom_terms["Cancelling"] = st.date_input(
-        '<span class="tooltip" data-tooltip="Date after which charter can be cancelled">Cancelling Date</span>',
-        help="Select the date after which the charter can be cancelled if not started.",
+        "Cancelling Date",
+        help="Select the date after which the charter can be cancelled if not started. Must be after laydays.",
         key="cancelling"
     )
     custom_terms["Freight Rate"] = st.text_input(
-        '<span class="tooltip" data-tooltip="Rate per ton or Worldscale points">Freight Rate</span>',
+        "Freight Rate",
         placeholder="e.g., WS100 or 50.00",
-        help="Enter the freight rate (Worldscale points or USD per ton).",
+        help="Enter the freight rate (Worldscale points or USD per ton). Must be a number.",
         key="freight_rate"
     )
     custom_terms["Use Worldscale"] = st.checkbox(
-        '<span class="tooltip" data-tooltip="Apply Worldscale rates for freight">Use Worldscale Terms</span>',
+        "Use Worldscale Terms",
         value=True,
         help="Check to apply Worldscale freight rates; uncheck for custom rates.",
         key="use_worldscale"
@@ -299,10 +277,11 @@ with st.expander("Ports and Dates", expanded=True):
 # Clause selection
 with st.expander("Additional Clauses", expanded=True):
     st.markdown('<p class="section-title">Add Optional Clauses</p>', unsafe_allow_html=True)
+    st.markdown("Select or add clauses to include in the charter agreement.", unsafe_allow_html=True)
     selected_clauses = st.multiselect(
         "Select Clauses",
         [clause["title"] for clause in clauses],
-        help="Choose additional clauses to include in the charter.",
+        help="Choose additional clauses to include in the charter. View their descriptions below.",
         key="clauses"
     )
     for clause in clauses:
@@ -321,16 +300,13 @@ with st.expander("Additional Clauses", expanded=True):
     if selected_clause_content:
         custom_terms["Additional Clauses"] = selected_clause_content
 
-    additional_clauses = st.text_area(
-        '<span class="tooltip" data-tooltip="Custom clauses for specific needs">Custom Clauses</span>',
+    custom_terms["Additional Clauses"] = st.text_area(
+        "Custom Clauses",
+        value=custom_terms.get("Additional Clauses", ""),
         placeholder="Enter any custom clauses here...",
         help="Add custom clauses specific to your charter agreement.",
         key="additional_clauses"
     )
-    if additional_clauses:
-        custom_terms["Additional Clauses"] = (
-            custom_terms.get("Additional Clauses", "") + "\n\n" + additional_clauses
-        ).strip()
 
 # Worldscale calculator
 with st.expander("Worldscale Calculator", expanded=False):
